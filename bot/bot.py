@@ -9,7 +9,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
 from dotenv import load_dotenv
 
-from handlers import router
+from handlers.common import router
 
 load_dotenv()
 
@@ -69,3 +69,4 @@ if __name__ == '__main__':
         asyncio.run(main())
     except KeyboardInterrupt:
         logger.info('Бот остановлен по запросу пользователя')
+        
