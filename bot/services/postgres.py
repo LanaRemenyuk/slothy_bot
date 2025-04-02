@@ -1,7 +1,9 @@
-import asyncpg
 import os
 from typing import List
+
+import asyncpg
 from dotenv import load_dotenv
+
 from models.service import ServiceOffer
 
 load_dotenv()

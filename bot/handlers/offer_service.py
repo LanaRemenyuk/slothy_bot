@@ -1,6 +1,6 @@
 from typing import Union
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 
@@ -60,7 +60,7 @@ async def process_full_name(message: Message, state: FSMContext):
     existing_tags = await offer_keyboards.get_existing_tags()
     keyboard = offer_keyboards.get_tags_keyboard(existing_tags, [], True)
     await message.answer(
-        "Выберите до 3 тегов или введите свои:",
+        text.choose_3_tags,
         reply_markup=keyboard
     )
     await state.set_state(OfferService.service_type)
@@ -78,29 +78,29 @@ async def process_tag_selection(callback: CallbackQuery, state: FSMContext):
     elif total_tags < 3:
         selected_tags.append(selected_tag)
     else:
-        await callback.answer("Можно выбрать не более 3 тегов", show_alert=True)
+        await callback.answer(text.only_3_tags2, show_alert=True)
         return
 
     await state.update_data(selected_tags=selected_tags)
     await update_tags_message(callback, state)
     await callback.answer()
 
-@router.callback_query(F.data == "add_custom_tag", OfferService.service_type)
+@router.callback_query(F.data == 'add_custom_tag', OfferService.service_type)
 async def process_add_custom_tag(callback: CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
     total_tags = len(user_data.get('selected_tags', [])) + len(user_data.get('custom_tags', []))
     
     if total_tags >= 3:
-        await callback.answer("Уже выбрано максимальное количество тегов", show_alert=True)
+        await callback.answer(text.no_more_tags, show_alert=True)
         return
 
     await callback.message.edit_text(
-        "Введите свой тег (или несколько через запятую):",
+        text.only_3_tags,
         reply_markup=offer_keyboards.get_back_to_tags_keyboard()
     )
     await state.set_state(OfferService.custom_tag_input)
 
-@router.callback_query(F.data == "back_to_tags", OfferService.custom_tag_input)
+@router.callback_query(F.data == 'back_to_tags', OfferService.custom_tag_input)
 async def process_back_to_tags(callback: CallbackQuery, state: FSMContext):
     await update_tags_message(callback, state)
     await state.set_state(OfferService.service_type)
@@ -115,7 +115,7 @@ async def process_custom_tag_input(message: Message, state: FSMContext):
     available_slots = 3 - total_tags
 
     if len(input_tags) > available_slots:
-        await message.answer(f"Можно добавить только {available_slots} тега(ов)")
+        await message.answer(text.get_tags_limit_text(available_slots))
         return
 
     new_custom_tags = custom_tags + input_tags[:available_slots]
@@ -123,7 +123,7 @@ async def process_custom_tag_input(message: Message, state: FSMContext):
     await update_tags_message(message, state)
     await state.set_state(OfferService.service_type)
 
-@router.callback_query(F.data == "done_tags", OfferService.service_type)
+@router.callback_query(F.data == 'done_tags', OfferService.service_type)
 async def process_done_tags(callback: CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
     selected_tags = user_data.get('selected_tags', [])
@@ -131,12 +131,12 @@ async def process_done_tags(callback: CallbackQuery, state: FSMContext):
     all_tags = selected_tags + custom_tags
 
     if not all_tags:
-        await callback.answer("Выберите хотя бы один тег", show_alert=True)
+        await callback.answer(text.empty_tag, show_alert=True)
         return
 
     await state.update_data(service_type=all_tags)
     await callback.message.edit_text(
-        f"Выбранные теги: {', '.join(all_tags)}\n{text.work_experience}",
+        f"{{text.chosen_tags}} {', '.join(all_tags)}\n{text.work_experience}",
         reply_markup=None
     )
     await state.set_state(OfferService.experience)
@@ -149,17 +149,12 @@ async def update_tags_message(update: Union[Message, CallbackQuery], state: FSMC
     total_tags = len(selected_tags) + len(custom_tags)
     existing_tags = await offer_keyboards.get_existing_tags()
     keyboard = offer_keyboards.get_tags_keyboard(existing_tags, selected_tags, True)
-    text_lines = [
-        f"Выбрано тегов: {total_tags}/3",
-        "Стандартные: " + (', '.join(selected_tags) if selected_tags else "нет"),
-        "Свои: " + (', '.join(custom_tags) if custom_tags else "нет"),
-        "Выберите теги или введите свои:"
-    ]
+    text_lines = text.get_tags_selection_text(selected_tags, custom_tags)
 
     if isinstance(update, CallbackQuery):
-        await update.message.edit_text("\n".join(text_lines), reply_markup=keyboard)
+        await update.message.edit_text(text_lines, reply_markup=keyboard)
     else:
-        await update.answer("\n".join(text_lines), reply_markup=keyboard)
+        await update.answer(text_lines, reply_markup=keyboard)
 
 @router.message(OfferService.experience)
 async def process_experience(message: Message, state: FSMContext):

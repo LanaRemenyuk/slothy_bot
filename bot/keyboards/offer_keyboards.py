@@ -1,5 +1,8 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
+                           KeyboardButton, ReplyKeyboardMarkup)
+
 from utils import text
+
 
 def get_confirmation_keyboard():
     return ReplyKeyboardMarkup(

@@ -1,9 +1,9 @@
-from aiogram import Router, F
-from aiogram.types import Message
+from aiogram import F, Router
 from aiogram.filters import Command
+from aiogram.types import Message
+
 from keyboards.main_menu import main_keyboard
 from utils.text import start_text
-
 
 router = Router()
 

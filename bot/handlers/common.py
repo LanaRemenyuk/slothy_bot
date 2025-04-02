@@ -1,5 +1,6 @@
 from aiogram import Router
-from . import start, offer_service, find_service
+
+from . import find_service, offer_service, start
 
 router = Router()
 
