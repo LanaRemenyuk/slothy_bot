@@ -136,7 +136,7 @@ async def process_done_tags(callback: CallbackQuery, state: FSMContext):
 
     await state.update_data(service_type=all_tags)
     await callback.message.edit_text(
-        f"{{text.chosen_tags}} {', '.join(all_tags)}\n{text.work_experience}",
+        f"{text.chosen_tags} {', '.join(all_tags)}\n{text.work_experience}",
         reply_markup=None
     )
     await state.set_state(OfferService.experience)

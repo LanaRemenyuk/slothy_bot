@@ -17,3 +17,11 @@ def get_tags_keyboard(popular_tags, row_width=3):
     ])
     
     return keyboard
+
+def create_navigation_buttons(current_index: int, total_offers: int) -> InlineKeyboardMarkup:
+    buttons = []
+    if current_index > 0:
+        buttons.append(InlineKeyboardButton(text=text.previous, callback_data='prev_offer'))
+    if current_index < total_offers - 1:
+        buttons.append(InlineKeyboardButton(text=text.next, callback_data='next_offer'))
+    return InlineKeyboardMarkup(inline_keyboard=[buttons])

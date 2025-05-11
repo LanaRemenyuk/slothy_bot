@@ -28,6 +28,15 @@ service_description = 'Добавь краткое описание своей �
 service_added = 'Спасибо! Анкета добавлена ✅'
 add_tag = '✏️ Ввести свой тег'
 choose_tag = 'Выберите тег'
+previous = '⬅️ Предыдущее'
+next = 'Следующее ➡️'
+no_offers = 'Нет предложений по этому тегу'
+tag_error = 'Ошибка при обработке тега'
+offer_upload_failed = 'Не удалось загрузить предложения'
+session_expired = 'Сессия поиска истекла'
+nav_error = 'Ошибка при навигации'
+enter_custom_tag = 'Введите свой тег для поиска услуг ➡️'
+no_offers_for_custom_tag = 'По вашему тегу не найдено предложений'
 
 def get_tag_chosen_text(selected_tag: str) -> str:
     return f"Выбран тег: {selected_tag}"
@@ -51,4 +60,24 @@ def get_tags_selection_text(selected_tags: list, custom_tags: list) -> str:
         f"Стандартные: {selected_text}\n"
         f"Свои: {custom_text}\n"
         "Выберите теги или введите свои:"
+    )
+
+def format_offer(tag: str, offer: dict) -> str:
+    """Форматирует текст предложения услуги"""
+    telegram_nick = offer.get('telegram_nick')
+    formatted_telegram = ''
+    
+    if telegram_nick:
+        telegram_nick = telegram_nick.lstrip('@')
+        formatted_telegram = f'@{telegram_nick}' if telegram_nick else 'Не указан'
+    else:
+        formatted_telegram = 'Не указан'
+
+    return (
+        f'🔹 Услуга: {tag}\n'
+        f'👤 Исполнитель: {offer.get("full_name", "Не указан")}\n'
+        f'📞 Телефон: {offer.get("phone", "Не указан")}\n'
+        f'📱 Telegram: {formatted_telegram}\n'
+        f'💼 Опыт: {offer.get("experience", "Не указан")}\n'
+        f'📝 Описание: {offer.get("description", "Нет описания")}'
     )
