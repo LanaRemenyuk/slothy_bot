@@ -64,3 +64,10 @@ async def get_offers_by_tag(tag: str) -> List[ServiceOffer]:
         """, tag)
         return [ServiceOffer(**r) for r in records]
     
+
+async def get_user_offers(user_id: int) -> list[dict]:
+    """Получение всех объявлений пользователя из БД"""
+    pool = await Database.get_pool()
+    query = "SELECT * FROM service_offers WHERE telegram_id = $1 ORDER BY created_at DESC"
+    async with pool.acquire() as conn:
+        return await conn.fetch(query, user_id)
