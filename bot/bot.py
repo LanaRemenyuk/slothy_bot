@@ -23,7 +23,9 @@ logger = logging.getLogger(__name__)
 async def setup_bot_commands(bot: Bot):
     commands = [
         BotCommand(command='/start', description='Начало работы'),
-        BotCommand(command='/help', description='Помощь')
+        BotCommand(command='/help', description='Помощь'),
+        BotCommand(command='/support', description='Связь с поддержкой'),
+        BotCommand(command='/myoffers', description='Мои объявления')
     ]
     await bot.set_my_commands(commands)
 
