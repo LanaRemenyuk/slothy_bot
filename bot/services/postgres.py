@@ -1,4 +1,6 @@
-from typing import List
+import uuid
+
+from typing import Dict, List, Optional
 
 import asyncpg
 
@@ -8,12 +10,14 @@ from models.service import ServiceOffer
 async def save_to_db(data: dict):
     pool = await Database.get_pool()
     async with pool.acquire() as conn:
+        offer_id = str(uuid.uuid4())
         await conn.execute('''
             INSERT INTO service_offers (
-                telegram_id, telegram_nick, phone, 
+                id, telegram_id, telegram_nick, phone, 
                 full_name, service_type, experience, description
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ''', 
+            offer_id,
             data['telegram_id'],
             data['telegram_nick'],
             data['phone'],
@@ -71,3 +75,20 @@ async def get_user_offers(user_id: int) -> list[dict]:
     query = "SELECT * FROM service_offers WHERE telegram_id = $1 ORDER BY created_at DESC"
     async with pool.acquire() as conn:
         return await conn.fetch(query, user_id)
+    
+
+async def get_offer_by_id(offer_id: uuid.UUID) -> Optional[Dict]:
+    """Получение объявления по ID"""
+    pool = await Database.get_pool()
+    query = "SELECT * FROM service_offers WHERE id = $1"
+    async with pool.acquire() as conn:
+        return await conn.fetchrow(query, offer_id)
+    
+
+async def delete_offer_by_id(offer_id: uuid.UUID) -> bool:
+    """Удаление объявления по ID"""
+    pool = await Database.get_pool()
+    query = "DELETE FROM service_offers WHERE id = $1"
+    async with pool.acquire() as conn:
+        await conn.execute(query, offer_id)
+    return True
