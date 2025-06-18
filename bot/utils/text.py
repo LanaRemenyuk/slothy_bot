@@ -44,6 +44,15 @@ offers_error = 'Произошла ошибка при загрузке Ваши
 remove_offer = '🗑 Удалить объявление по номеру'
 offer_not_found = 'Объявление не найдено'
 deletion_error = 'Ошибка при удалении объявления'
+manage_visibility = '👁️ Изменить видимость объявления'
+back_button = '⬅️  Назад'
+your_offers = 'Ваши объявления:\n\n'
+hidden = '🚫 Скрыто'
+available_for_users = '✅ Доступно пользователям'
+toggle_error = 'Ошибка при переключении статуса объявления'
+
+def visibility_updated_message(number: str, status: str) -> str:
+    return f"Объявление №{number} — статус изменён на: {status}"
 
 def get_tag_chosen_text(selected_tag: str) -> str:
     return f"Выбран тег: {selected_tag}"
@@ -98,7 +107,8 @@ def format_own_offer(offer: dict) -> str:
         f'📞 Телефон: {offer.get("phone", "Не указан")}\n'
         f'📱 Telegram: {offer.get("telegram_nick", "Не указан")}\n'
         f'💼 Опыт: {offer.get("experience", "Не указан")}\n'
-        f'📝 Описание: {offer.get("description", "Нет описания")}'
+        f'📝 Описание: {offer.get("description", "Нет описания")}\n'
+        f'✅ Статус: {offer.get("status")}'
     )
 
 

@@ -15,7 +15,7 @@ async def save_to_db(data: dict):
             INSERT INTO service_offers (
                 id, telegram_id, telegram_nick, phone, 
                 full_name, service_type, experience, description
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         ''', 
             offer_id,
             data['telegram_id'],
@@ -24,7 +24,8 @@ async def save_to_db(data: dict):
             data['full_name'],
             data['service_type'],
             data['experience'],
-            data['description']
+            data['description'],
+            False
         )
 
 
@@ -65,16 +66,24 @@ async def get_offers_by_tag(tag: str) -> List[ServiceOffer]:
         records = await conn.fetch("""
           SELECT * FROM service_offers
           WHERE $1 = ANY(service_type)
+          AND is_hidden = FALSE
         """, tag)
         return [ServiceOffer(**r) for r in records]
     
 
 async def get_user_offers(user_id: int) -> list[dict]:
-    """Получение всех объявлений пользователя из БД"""
+    """Получение всех объявлений пользователя (включая скрытые) с пометкой статуса"""
     pool = await Database.get_pool()
-    query = "SELECT * FROM service_offers WHERE telegram_id = $1 ORDER BY created_at DESC"
+    query = """
+        SELECT *, 
+               CASE WHEN is_hidden THEN 'Скрыто' ELSE 'Доступно' END as status
+        FROM service_offers 
+        WHERE telegram_id = $1
+        ORDER BY created_at DESC
+    """
     async with pool.acquire() as conn:
-        return await conn.fetch(query, user_id)
+        records = await conn.fetch(query, user_id)
+        return [dict(record) for record in records]
     
 
 async def get_offer_by_id(offer_id: uuid.UUID) -> Optional[Dict]:
@@ -92,3 +101,16 @@ async def delete_offer_by_id(offer_id: uuid.UUID) -> bool:
     async with pool.acquire() as conn:
         await conn.execute(query, offer_id)
     return True
+
+
+async def toggle_offer_visibility(offer_id: uuid.UUID) -> bool:
+    """Переключение видимости объявления"""
+    pool = await Database.get_pool()
+    query = """UPDATE service_offers
+    SET is_hidden = NOT is_hidden
+    WHERE id = $1
+    RETURNING is_hidden
+    """
+    async with pool.acquire() as conn:
+        result = await conn.fetchval(query, offer_id)
+        return result
